@@ -75,6 +75,7 @@ nav .nav-item-home {
     display: none;
 }
 
+/* 响应式布局调整 */
 @media screen and (max-width: 600px) {
     nav {
         height: 48px;
