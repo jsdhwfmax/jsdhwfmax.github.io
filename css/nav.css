@@ -75,31 +75,6 @@ nav .nav-item-home {
     display: none;
 }
 
-nav .nav-item-icon {
-    width: 32px;
-    height: 48px;
-    background-position: center;
-    background-size: 24px 24px;
-    background-repeat: no-repeat;
-    padding: 0;
-}
-
-/* GitHub 图标样式 */
-body[data-color-scheme="auto"] nav .nav-item-github, 
-body[data-color-scheme="light"] nav .nav-item-github {
-    background-image: url(/themes/cupertino/source/theme-img/github-mark-dark.png);
-}
-
-@media (prefers-color-scheme: dark) {
-    body[data-color-scheme="auto"] nav .nav-item-github {
-        background-image: url(/themes/cupertino/source/theme-img/github-mark-light.png);
-    }
-}
-
-body[data-color-scheme="dark"] nav .nav-item-github {
-    background-image: url(/themes/cupertino/source/theme-img/github-mark-light.png);
-}
-
 @media screen and (max-width: 600px) {
     nav {
         height: 48px;
@@ -149,10 +124,6 @@ body[data-color-scheme="dark"] nav .nav-item-github {
         pointer-events: none;
         display: block;
         text-align: left;
-    }
-    nav .nav-item-icon {
-        float: left;
-        display: inline-block;
     }
     nav.open .title {
         transform: translate(0, 8px);
