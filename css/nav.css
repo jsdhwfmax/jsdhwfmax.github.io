@@ -84,27 +84,20 @@ nav .nav-item-icon {
     padding: 0;
 }
 
-/* 新增微信和邮箱图标样式 */
-.nav-item-email img,
-.nav-item-wechat img {
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-    margin-right: 5px;
+/* GitHub 图标样式 */
+body[data-color-scheme="auto"] nav .nav-item-github, 
+body[data-color-scheme="light"] nav .nav-item-github {
+    background-image: url(/themes/cupertino/source/theme-img/github-mark-dark.png);
 }
 
-/* 为 WeChat ID 添加样式 */
-.nav-item-wechat span {
-    font-size: 14px;
-    color: var(--black-4);
-    vertical-align: middle;
-    margin-left: 5px;
+@media (prefers-color-scheme: dark) {
+    body[data-color-scheme="auto"] nav .nav-item-github {
+        background-image: url(/themes/cupertino/source/theme-img/github-mark-light.png);
+    }
 }
 
-/* 适应深色模式的图标 */
-body[data-color-scheme="dark"] .nav-item-wechat img,
-body[data-color-scheme="dark"] .nav-item-email img {
-    filter: brightness(0.9); /* 使图标在深色模式下更清晰 */
+body[data-color-scheme="dark"] nav .nav-item-github {
+    background-image: url(/themes/cupertino/source/theme-img/github-mark-light.png);
 }
 
 @media screen and (max-width: 600px) {
