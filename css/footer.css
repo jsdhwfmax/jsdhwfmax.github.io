@@ -42,48 +42,18 @@ footer .title {
 footer .item {
     color: var(--footer-link-grey);
     display: block;
+    text-decoration: none;
+}
+
+footer .item:hover {
+    color: var(--black-2);
 }
 
 footer .footer-extra-description {
-    color: var(--footer-link-grey);
-    font-size: 14px;
-    display: block;
-    margin-top: 12px;
-    margin-bottom: -12px;
+    display: none; /* 隐藏 extra description */
 }
 
+/* 移除不必要的多余样式 */
 footer .color-scheme-toggle {
-    display: flex;
-    padding: 1px;
-    gap: 1px;
-    border-radius: 16px;
-    border: 1px solid var(--blue);
-    margin-top: 16px;
-    width: max-content;
-}
-
-footer .color-scheme-toggle label {
-    display: flex;
-}
-
-footer .color-scheme-toggle label input {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    margin: 0;
-}
-
-footer .color-scheme-toggle label span {
-    font-size: 12px;
-    padding: 4px 2px;
-    border-radius: 12px;
-    color: var(--link);
-    width: 40px;
-    display: block;
-    text-align: center;
-}
-
-footer .color-scheme-toggle label input:checked+span {
-    color: var(--white-txt-on-blue-bg);
-    background-color: var(--blue);
+    display: none;
 }
