@@ -121,9 +121,9 @@
 <h1 id="确定预测目标"><a href="#确定预测目标" class="headerlink" title="确定预测目标"></a>确定预测目标</h1><p>在股票市场中，波动较大的股票并不少见。为了更好地了解市场状况，金融从业人员往往倾向于研究分析股票指数而非单个股票的价格。因为相对于单个股票来说，指数更稳定，更适合精准建模。指数通常由多种股票构成，广基指数（如道琼斯指数、标普500指数、日经指数、恒生指数等）一般反映市场绩效。这类指数不仅能反映股票市场的基本状况，还能体现投资者对经济现状的敏感度。</p>
 <p>在本篇中，我选择的目标预测指数是标普500指数，这是全球最具标志性的追踪美国高市值公司的股票指数之一。</p>
 <h1 id="数据收集"><a href="#数据收集" class="headerlink" title="数据收集"></a>数据收集</h1><p>收集金融数据的平台众多，其中像 Bloomberg、Qliq、Quandl 这样的国外市场平台，以及同花顺、万德这样的国内平台都受到大众的喜爱。大部分企业为了保证数据的准确性、安全性和时效性，在生产环境下会使用成熟的收费平台。在本篇中，我使用的是 Yahoo Finance，一个免费的公开金融数据平台，它不仅包含了大部分公开股票的实时数据，还提供了 Python API，可以通过股票代码和时间区间直接查询历史价格。</p>
-<pre><code>import yfinance as yf
-df_sp = yf.download(&#39;^GSPC&#39;, start=&quot;2012-11-01&quot;, end=&quot;2022-11-01&quot;)
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> yfinance <span class="keyword">as</span> yf</span><br><span class="line">df_sp = yf.download(<span class="string">&#x27;^GSPC&#x27;</span>, start=<span class="string">&quot;2012-11-01&quot;</span>, end=<span class="string">&quot;2022-11-01&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/figures/1.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -131,16 +131,18 @@ df_sp = yf.download(&#39;^GSPC&#39;, start=&quot;2012-11-01&quot;, end=&quot;202
 
 <p>Pandas 数据集 <code>df_sp</code> 包含了从 2012 年 11 月 1 日至 2022 年 10 月 31日十年以来的标普 500指数数据，记录了每个日期所对应的开市价格、最高价格、最低价格、闭市价格、闭市调整价格和交易量。</p>
 <h1 id="探索性数据分析"><a href="#探索性数据分析" class="headerlink" title="探索性数据分析"></a>探索性数据分析</h1><p>在收集完所需数据后，首先可以查看数据集中可能存在的空缺记录和需要调整的字段。我使用以下函数来了解数据集中包含多少条记录、是否有空缺值以及每个字段所对应的数据类型。</p>
-<pre><code>df_sp.info()
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df_sp.info()</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/2.jpg" style="width:100%; max-width:600px;">
 </p>
 
 
 <p>可以看到，数据集中没有需要处理的空缺值，并且每个字段的类型都是统一的。除日期以外（Python Datetime类型格式），其他字段都是数字类型。价格相关的都是浮点数，交易量相关的为整数。接下来，我通过以下函数查看数据的统计类信息。</p>
-<pre><code>df_sp.describe()
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df_sp.describe()</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/3.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -164,17 +166,18 @@ df_sp = yf.download(&#39;^GSPC&#39;, start=&quot;2012-11-01&quot;, end=&quot;202
 <li>根据周期调整交易量数据</li>
 </ol>
 <h2 id="将时间转换为变量"><a href="#将时间转换为变量" class="headerlink" title="将时间转换为变量"></a>将时间转换为变量</h2><p>首先，我需要将时间信息从索引中提取出来。</p>
-<pre><code>df_mod_forecast = df_mod.reset_index()
-df_mod_forecast.info()
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">df_mod_forecast = df_mod.reset_index()</span><br><span class="line">df_mod_forecast.info()</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/yy1.jpg" style="width:100%; max-width:600px;">
 </p>
 
 
 <p>从日期信息中，提取年、月、日和工作日信息，经过处理后的数据如下：</p>
-<pre><code>df_mod_forecast.head()
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df_mod_forecast.head()</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/yy2.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -182,8 +185,9 @@ df_mod_forecast.info()
 
 <h2 id="更改价格数据"><a href="#更改价格数据" class="headerlink" title="更改价格数据"></a>更改价格数据</h2><p>本篇的预测目标是未来价格，对于指数而言，金融从业者相对看重的是价格变动而非其数值的大小。我可以选择预测价格，也可以选择预测价格变动。我将根据数据本身的特性来决定二者当中谁更适合建模。</p>
 <p>首先，我可以将每日和前一个工作日的价格差百分比计算出来。</p>
-<pre><code>df_mod_forecast[&#39;AdjPricePctDelta&#39;] = df_mod_forecast[&#39;Adj Close&#39;].pct_change()
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df_mod_forecast[<span class="string">&#x27;AdjPricePctDelta&#x27;</span>] = df_mod_forecast[<span class="string">&#x27;Adj Close&#x27;</span>].pct_change()</span><br></pre></td></tr></table></figure>
+
+
 <h2 id="寻找周期和季节性-—-解构时间序列与自相关分析"><a href="#寻找周期和季节性-—-解构时间序列与自相关分析" class="headerlink" title="寻找周期和季节性 — 解构时间序列与自相关分析"></a>寻找周期和季节性 — 解构时间序列与自相关分析</h2><p>指数价格数据是以日期为单位的，且只有在工作日才有数据。我在尝试周期时可以有多种选择，例如以周、月或者季度为单位。这里时间序列分解效果最好的是月份。从2020 年 2 月到 2022 年 11 月大约有 20个月的时间。合适的周期会帮助我更好地寻找数据中的季节性。在之前的时间序列图像中注意到，全球疫情蔓延之后，股票市场表现出高于平常的波动。我需要使用multiplicative 模型来解决这个问题。我首先尝试分解价格的时间序列。</p>
 <p style="text-align: center;">
   <img src="/images/yy3.jpg" style="width:100%; max-width:600px;">
@@ -193,17 +197,17 @@ df_mod_forecast.info()
 <p>通过以上图像可以看出，每 100 天大约有 5 个周期，每个周期大约有 20天。除此之外，价格数据残差（residual）部分表现并不佳，徘徊在 1 左右。</p>
 <h2 id="根据周期调整交易量数据"><a href="#根据周期调整交易量数据" class="headerlink" title="根据周期调整交易量数据"></a>根据周期调整交易量数据</h2><p>时间序列较为传统的模型为 ARIMA模型，这类模型只需要一条时间序列，根据数据周期性等特征调试参数。时间序列也可以使用机器学习进行建模，这样的模型可以输入更多的变量，但需要对数据进行调整。和ARIMA 类型的模型不同，我需要使用 $t-1$ 的价格波动和 $t-2$的价格波动作为变量的一部分，输入模型进行训练。</p>
 <p>在这里我需要运用 Pandas 的 shift方程，将价格变动数据分别下移一个和两个时间间隔。Shift方程需要索引作为时间的依据，因此我需要将日期设为索引。根据日期，将价格变动数据下移。</p>
-<pre><code>df_model[&#39;t_1_PricePctDelta&#39;] = df_model[&#39;AdjPricePctDelta&#39;].shift(periods=1)
-df_model[&#39;t_2_PricePctDelta&#39;] = df_model[&#39;AdjPricePctDelta&#39;].shift(periods=2)
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">df_model[<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>] = df_model[<span class="string">&#x27;AdjPricePctDelta&#x27;</span>].shift(periods=<span class="number">1</span>)</span><br><span class="line">df_model[<span class="string">&#x27;t_2_PricePctDelta&#x27;</span>] = df_model[<span class="string">&#x27;AdjPricePctDelta&#x27;</span>].shift(periods=<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+
 <p>以此类推，我将交易量数据分别下移一个和两个时间间隔，两者求差即可得到每个交易日昨天（$t-1$）与前天（$t-2$）之间的交易量差。</p>
-<pre><code>df_model[&#39;t-1volume&#39;] = df_model[&#39;Volume_in_M&#39;].shift(periods=1)
-df_model[&#39;t-2volume&#39;] = df_model[&#39;Volume_in_M&#39;].shift(periods=2)
-df_model[&#39;t_1_VolumeDelta&#39;] = df_model[&#39;t-1volume&#39;] - df_model[&#39;t-2volume&#39;]
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">df_model[<span class="string">&#x27;t-1volume&#x27;</span>] = df_model[<span class="string">&#x27;Volume_in_M&#x27;</span>].shift(periods=<span class="number">1</span>)</span><br><span class="line">df_model[<span class="string">&#x27;t-2volume&#x27;</span>] = df_model[<span class="string">&#x27;Volume_in_M&#x27;</span>].shift(periods=<span class="number">2</span>)</span><br><span class="line">df_model[<span class="string">&#x27;t_1_VolumeDelta&#x27;</span>] = df_model[<span class="string">&#x27;t-1volume&#x27;</span>] - df_model[<span class="string">&#x27;t-2volume&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+
 <p>通过交易日前一天的价格变动，我可以将其转换为涨跌符号来作为模型输入的一部分。</p>
-<pre><code>df_model[&#39;sign_t_1&#39;] = np.where(df_model[&#39;t_1_PricePctDelta&#39;] &gt; 0, 1, 0 * df_model[&#39;t_1_PricePctDelta&#39;])
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df_model[<span class="string">&#x27;sign_t_1&#x27;</span>] = np.where(df_model[<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>] &gt; <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span> * df_model[<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+
 <p>至此，完成了标普 500 指数数据从下载到转换的全过程。</p>
 <h1 id="特征工程"><a href="#特征工程" class="headerlink" title="特征工程"></a>特征工程</h1><p>在正式建模之前，我需要对数据再进行特征工程，从而保证每个变量在模型训练中的公平性。根据现有数据的特点，我执行的特征工程流程大致有以下三个步骤：</p>
 <ol>
@@ -212,26 +216,25 @@ df_model[&#39;t_1_VolumeDelta&#39;] = df_model[&#39;t-1volume&#39;] - df_model[&
 <li>处理分类变量</li>
 </ol>
 <h2 id="处理缺失值并提取所需变量"><a href="#处理缺失值并提取所需变量" class="headerlink" title="处理缺失值并提取所需变量"></a>处理缺失值并提取所需变量</h2><p>首先，我需要剔除包含缺失值的行，并只保留需要的变量<code>x_input</code>，为下一步特征工程做准备。</p>
-<pre><code>x_input = (df_model.dropna()
-</code></pre>
-<p>[[‘Year’,’Month’,’Day’,’Weekday’,’seasonality’,’sign_t_1’,’t_1_PricePctDelta’,’t_2_PricePctDelta’,’t_1_VolumeDelta’]].reset_index(drop&#x3D;True))<br>    x_input.head(10)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x_input = (df_model.dropna()[[<span class="string">&#x27;Year&#x27;</span>,<span class="string">&#x27;Month&#x27;</span>,<span class="string">&#x27;Day&#x27;</span>,<span class="string">&#x27;Weekday&#x27;</span>,<span class="string">&#x27;seasonality&#x27;</span>,<span class="string">&#x27;sign_t_1&#x27;</span>,<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>,<span class="string">&#x27;t_2_PricePctDelta&#x27;</span>,<span class="string">&#x27;t_1_VolumeDelta&#x27;</span>]].reset_index(drop=<span class="literal">True</span>))</span><br><span class="line">x_input.head(<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+
 <p style="text-align: center;">
   <img src="/images/e1.jpg" style="width:100%; max-width:600px;">
 </p>
 
 
 <p>然后，再将目标预测列 <code>y</code> 从数据中提取出来。</p>
-<pre><code>y = df_model.dropna().reset_index(drop=True)[&#39;AdjPricePctDelta&#39;]
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">y = df_model.dropna().reset_index(drop=<span class="literal">True</span>)[<span class="string">&#x27;AdjPricePctDelta&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+
 <h2 id="数据标准化"><a href="#数据标准化" class="headerlink" title="数据标准化"></a>数据标准化</h2><p>由于价格百分比差与交易量差在数值上有很大差距，如果不标准化数据，可能导致模型对某一个变量有倾向性。为了平衡各个变量对于模型的影响，我需要调整除分类变量以外的数据，使它们的数值大小相对近似。Python提供了多种数据标准化的工具，其中 <code>sklearn</code> 的 <code>StandardScaler</code>模块比较常用。数据标准化的方法有多种，我选择的是基于均值和标准差的标准化算法。这里，大家可以根据对数据特性的理解和模型类型的不同来决定使用哪种算法。比如对于树形模型来说，标准化不是必要步骤。</p>
-<pre><code>scaler = StandardScaler()
-x = x_input.copy()
-x[[&#39;t_1_PricePctDelta&#39;,&#39;t_2_PricePctDelta&#39;,&#39;t_1_VolumeDelta&#39;]] = scaler.fit_transform(x[[&#39;t_1_PricePctDelta&#39;,&#39;t_2_PricePctDelta&#39;,&#39;t_1_VolumeDelta&#39;]])
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">scaler = StandardScaler()</span><br><span class="line">x = x_input.copy()</span><br><span class="line">x[[<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>,<span class="string">&#x27;t_2_PricePctDelta&#x27;</span>,<span class="string">&#x27;t_1_VolumeDelta&#x27;</span>]] = scaler.fit_transform(x[[<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>,<span class="string">&#x27;t_2_PricePctDelta&#x27;</span>,<span class="string">&#x27;t_1_VolumeDelta&#x27;</span>]])</span><br></pre></td></tr></table></figure>
+
+
 <h2 id="处理分类变量"><a href="#处理分类变量" class="headerlink" title="处理分类变量"></a>处理分类变量</h2><p>最常见的分类变量处理方法之一是<code>one-hot encoding</code>。对于高基数的分类变量，经过编码处理后，变量数量增加，大家可以考虑通过降维或更高阶的算法来降低计算压力。</p>
-<pre><code>x_mod = pd.get_dummies(data=x, columns=[&#39;Year&#39;,&#39;Month&#39;,&#39;Day&#39;,&#39;Weekday&#39;,&#39;seasonality&#39;])
-x_mod.columns
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x_mod = pd.get_dummies(data=x, columns=[<span class="string">&#x27;Year&#x27;</span>,<span class="string">&#x27;Month&#x27;</span>,<span class="string">&#x27;Day&#x27;</span>,<span class="string">&#x27;Weekday&#x27;</span>,<span class="string">&#x27;seasonality&#x27;</span>])</span><br><span class="line">x_mod.columns</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/e2.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -244,15 +247,17 @@ x_mod.columns
 <h2 id="模型训练"><a href="#模型训练" class="headerlink" title="模型训练"></a>模型训练</h2><p>在模型训练阶段，所有的候选模型将以默认参数进行训练，我根据 MAPE的值来判断最适合进一步细节训练的模型类型。我尝试了包括线性回归、随机森林等多种模型算法，并将经过训练集训练的各模型在测试集中的模型表现以字典的形式打印返回。</p>
 <p>至此，完成了模型选择和训练的初步阶段，并评估了不同模型在测试集上的表现。</p>
 <h1 id="模型评估"><a href="#模型评估" class="headerlink" title="模型评估"></a>模型评估</h1><p>通过运行以下方程，我可以根据预测差值（MAPE）的大小对各模型的表现进行排列。大家也可以探索更多种不同的模型，根据评估指标的高低择优选取模型做后续微调。</p>
-<pre><code>trail_result = ensemble_method_reg_trails(x_train, y_train, x_test, y_test)
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trail_result = ensemble_method_reg_trails(x_train, y_train, x_test, y_test)</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/q1.jpg" style="width:100%; max-width:600px;">
 </p>
 
 
-<pre><code>pd.DataFrame(trail_result).sort_values(&#39;model_test_mape&#39;, ascending=True)
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pd.DataFrame(trail_result).sort_values(<span class="string">&#x27;model_test_mape&#x27;</span>, ascending=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/q2.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -272,40 +277,25 @@ x_mod.columns
 </ul>
 <p>注意，<code>RandomizedSearchCV</code> 和 <code>GridSearchCV</code>都会使用交叉验证来评估各个模型的表现。在前文中我提到，时间序列是需要考虑顺序的。对于已经经过转换来适应机器学习模型的时间序列，每条记录都有其相对应的时间信息，训练集中也没有测试集的信息。训练集中记录的顺序可以按照特定的交叉验证顺序排列（较为复杂），也可以被打乱。这里，我认为训练集数据被打乱不影响模型训练。</p>
 <p><code>base_estimator</code> 是 AdaBoost 提升算法的基础，我需要提前建立一个<code>base_estimator</code> 的列表。</p>
-<pre><code>l_base_estimator = []
-for i in range(1,16):
-    base = DecisionTreeRegressor(max_depth=i, random_state=42)
-    l_base_estimator.append(base)
-l_base_estimator += [LinearSVR(random_state=42, epsilon=0.01, C=100)]
-</code></pre>
-<h2 id="使用-RandomizedSearchCV-寻找最佳参数的大致范围"><a href="#使用-RandomizedSearchCV-寻找最佳参数的大致范围" class="headerlink" title="使用 RandomizedSearchCV 寻找最佳参数的大致范围"></a>使用 RandomizedSearchCV 寻找最佳参数的大致范围</h2><p>使用 <code>RandomizedSearchCV</code>，随机尝试参数。这里，我尝试了 500种不同的参数组合。</p>
-<pre><code>randomized_search_grid = &#123;
-    &#39;n_estimators&#39;: [10, 50, 100, 500, 1000, 5000],
-    &#39;base_estimator&#39;: l_base_estimator,
-    &#39;learning_rate&#39;: np.linspace(0.01, 1)
-&#125;
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">l_base_estimator = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">16</span>):</span><br><span class="line">    base = DecisionTreeRegressor(max_depth=i, random_state=<span class="number">42</span>)</span><br><span class="line">    l_base_estimator.append(base)</span><br><span class="line">l_base_estimator += [LinearSVR(random_state=<span class="number">42</span>, epsilon=<span class="number">0.01</span>, C=<span class="number">100</span>)]</span><br></pre></td></tr></table></figure>
 
-search = RandomizedSearchCV(
-    AdaBoostRegressor(random_state=42), 
-    randomized_search_grid, 
-    n_iter=500, 
-    scoring=&#39;neg_mean_absolute_error&#39;, 
-    n_jobs=-1, 
-    cv=5, 
-    random_state=42
-)
-result = search.fit(x_train, y_train)
-</code></pre>
+
+<h2 id="使用-RandomizedSearchCV-寻找最佳参数的大致范围"><a href="#使用-RandomizedSearchCV-寻找最佳参数的大致范围" class="headerlink" title="使用 RandomizedSearchCV 寻找最佳参数的大致范围"></a>使用 RandomizedSearchCV 寻找最佳参数的大致范围</h2><p>使用 <code>RandomizedSearchCV</code>，随机尝试参数。这里，我尝试了 500种不同的参数组合。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">randomized_search_grid = &#123;</span><br><span class="line">    <span class="string">&#x27;n_estimators&#x27;</span>: [<span class="number">10</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">500</span>, <span class="number">1000</span>, <span class="number">5000</span>],</span><br><span class="line">    <span class="string">&#x27;base_estimator&#x27;</span>: l_base_estimator,</span><br><span class="line">    <span class="string">&#x27;learning_rate&#x27;</span>: np.linspace(<span class="number">0.01</span>, <span class="number">1</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">search = RandomizedSearchCV(</span><br><span class="line">    AdaBoostRegressor(random_state=<span class="number">42</span>), </span><br><span class="line">    randomized_search_grid, </span><br><span class="line">    n_iter=<span class="number">500</span>, </span><br><span class="line">    scoring=<span class="string">&#x27;neg_mean_absolute_error&#x27;</span>, </span><br><span class="line">    n_jobs=-<span class="number">1</span>, </span><br><span class="line">    cv=<span class="number">5</span>, </span><br><span class="line">    random_state=<span class="number">42</span></span><br><span class="line">)</span><br><span class="line">result = search.fit(x_train, y_train)</span><br></pre></td></tr></table></figure>
+
+
 <p>可以看到，500 种参数组合中表现最佳的是：</p>
-<pre><code>result.best_params_
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">result.best_params_</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/q3.jpg" style="width:100%; max-width:600px;">
 </p>
 
 
-<pre><code>result.best_score_
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">result.best_score_</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/q4.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -313,14 +303,13 @@ result = search.fit(x_train, y_train)
 
 <h2 id="使用-GridSearchCV-寻找更精确的参数"><a href="#使用-GridSearchCV-寻找更精确的参数" class="headerlink" title="使用 GridSearchCV 寻找更精确的参数"></a>使用 GridSearchCV 寻找更精确的参数</h2><p>根据 <code>RandomizedSearchCV</code> 的结果，我再使用 <code>GridSearchCV</code>进行更深一步的微调：</p>
 <ul>
-<li><p><code>n_estimators</code>: 1-50</p>
-</li>
-<li><p><code>base_estimator</code>: Decision Tree with max depth 9</p>
-</li>
-<li><p><code>learning_rate</code>: 0.7 左右</p>
-<p>search_grid &#x3D; {<br>‘n_estimators’: range(1, 51),<br>‘learning_rate’: np.linspace(0.6, 0.8, num&#x3D;20)<br>}</p>
-</li>
+<li><code>n_estimators</code>: 1-50</li>
+<li><code>base_estimator</code>: Decision Tree with max depth 9</li>
+<li><code>learning_rate</code>: 0.7 左右</li>
 </ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">search_grid = &#123;</span><br><span class="line">    <span class="string">&#x27;n_estimators&#x27;</span>: <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">51</span>),</span><br><span class="line">    <span class="string">&#x27;learning_rate&#x27;</span>: np.linspace(<span class="number">0.6</span>, <span class="number">0.8</span>, num=<span class="number">20</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/q5.jpg" style="width:100%; max-width:600px;">
 </p>
@@ -345,42 +334,12 @@ result = search.fit(x_train, y_train)
 
 
 <h1 id="模型预测"><a href="#模型预测" class="headerlink" title="模型预测"></a>模型预测</h1><p>与传统的 ARIMA模型不同，现有模型的每次预测都需要将预测信息重新整合，输入进模型后才能得到新的预测结果。输入数据的重新整合可以用以下方程进行开发，方便适应各种应用场景的需求。</p>
-<pre><code>def forecast_one_period(price_info_adj_data, ml_model, data_processor):
-    last_record = price_info_adj_data.reset_index().iloc[-1,:]
-    next_day = last_record[&#39;Date&#39;] + relativedelta(days=1)
-    next_day_t_1_PricePctDelta = last_record[&#39;AdjPricePctDelta&#39;]
-    next_day_t_2_PricePctDelta = last_record[&#39;t_1_PricePctDelta&#39;]
-    next_day_t_1_VolumeDelta = last_record[&#39;Volume_in_M&#39;] - last_record[&#39;t_1_VolumeDelta&#39;]
-    if next_day_t_1_PricePctDelta &gt; 0:
-        next_day_sign_t_1 = 1
-    else:
-        next_day_sign_t_1 = 0
-    next_day_input = (pd.DataFrame(&#123;&#39;Date&#39;:[next_day],
-                                    &#39;Volume_in_M&#39;:[-99999],
-                                    &#39;AdjPricePctDelta&#39;:[-99999],
-                                    &#39;t_1_PricePctDelta&#39;:[next_day_t_1_PricePctDelta],
-                                    &#39;t_2_PricePctDelta&#39;:[next_day_t_2_PricePctDelta],
-                                    &#39;t-1volume&#39;: last_record[&#39;Volume_in_M&#39;],
-                                    &#39;t-2volume&#39;: last_record[&#39;t-1volume&#39;],
-                                    &#39;t_1_VolumeDelta&#39;:[next_day_t_1_VolumeDelta],
-                                    &#39;sign_t_1&#39;:next_day_sign_t_1&#125;).set_index(&#39;Date&#39;))
-    if next_day &gt; datetime.datetime(2020, 2, 15):
-        price_info_adj_data = price_info_adj_data[price_info_adj_data.index &gt; datetime.datetime(2020, 2, 15)]
-    price_info_adj_data_next_day = pd.concat([price_info_adj_data, next_day_input])
-    input_modified = data_processor.data_modification(price_info_adj_data_next_day)
-    x,y = data_processor.data_modeling_prep(input_modified)
-    next_day_x = x.iloc[-1:]
-    forecast_price_delta = ml_model.predict(next_day_x)
-    forecast_df = &#123;&#39;Date&#39;:[next_day], &#39;price_pct_delta&#39;:[forecast_price_delta[0]], &#39;actual_pct_delta&#39;:[np.nan]&#125;
-    return pd.DataFrame(forecast_df)
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">forecast_one_period</span>(<span class="params">price_info_adj_data, ml_model, data_processor</span>):</span><br><span class="line">    last_record = price_info_adj_data.reset_index().iloc[-<span class="number">1</span>,:]</span><br><span class="line">    next_day = last_record[<span class="string">&#x27;Date&#x27;</span>] + relativedelta(days=<span class="number">1</span>)</span><br><span class="line">    next_day_t_1_PricePctDelta = last_record[<span class="string">&#x27;AdjPricePctDelta&#x27;</span>]</span><br><span class="line">    next_day_t_2_PricePctDelta = last_record[<span class="string">&#x27;t_1_PricePctDelta&#x27;</span>]</span><br><span class="line">    next_day_t_1_VolumeDelta = last_record[<span class="string">&#x27;Volume_in_M&#x27;</span>] - last_record[<span class="string">&#x27;t_1_VolumeDelta&#x27;</span>]</span><br><span class="line">    <span class="keyword">if</span> next_day_t_1_PricePctDelta &gt; <span class="number">0</span>:</span><br><span class="line">        next_day_sign_t_1 = <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        next_day_sign_t_1 = <span class="number">0</span></span><br><span class="line">    next_day_input = (pd.DataFrame(&#123;<span class="string">&#x27;Date&#x27;</span>:[next_day],</span><br><span class="line">                                    <span class="string">&#x27;Volume_in_M&#x27;</span>:[-<span class="number">99999</span>],</span><br><span class="line">                                    <span class="string">&#x27;AdjPricePctDelta&#x27;</span>:[-<span class="number">99999</span>],</span><br><span class="line">                                    <span class="string">&#x27;t_1_PricePctDelta&#x27;</span>:[next_day_t_1_PricePctDelta],</span><br><span class="line">                                    <span class="string">&#x27;t_2_PricePctDelta&#x27;</span>:[next_day_t_2_PricePctDelta],</span><br><span class="line">                                    <span class="string">&#x27;t-1volume&#x27;</span>: last_record[<span class="string">&#x27;Volume_in_M&#x27;</span>],</span><br><span class="line">                                    <span class="string">&#x27;t-2volume&#x27;</span>: last_record[<span class="string">&#x27;t-1volume&#x27;</span>],</span><br><span class="line">                                    <span class="string">&#x27;t_1_VolumeDelta&#x27;</span>:[next_day_t_1_VolumeDelta],</span><br><span class="line">                                    <span class="string">&#x27;sign_t_1&#x27;</span>:next_day_sign_t_1&#125;).set_index(<span class="string">&#x27;Date&#x27;</span>))</span><br><span class="line">    <span class="keyword">if</span> next_day &gt; datetime.datetime(<span class="number">2020</span>, <span class="number">2</span>, <span class="number">15</span>):</span><br><span class="line">        price_info_adj_data = price_info_adj_data[price_info_adj_data.index &gt; datetime.datetime(<span class="number">2020</span>, <span class="number">2</span>, <span class="number">15</span>)]</span><br><span class="line">    price_info_adj_data_next_day = pd.concat([price_info_adj_data, next_day_input])</span><br><span class="line">    input_modified = data_processor.data_modification(price_info_adj_data_next_day)</span><br><span class="line">    x,y = data_processor.data_modeling_prep(input_modified)</span><br><span class="line">    next_day_x = x.iloc[-<span class="number">1</span>:]</span><br><span class="line">    forecast_price_delta = ml_model.predict(next_day_x)</span><br><span class="line">    forecast_df = &#123;<span class="string">&#x27;Date&#x27;</span>:[next_day], <span class="string">&#x27;price_pct_delta&#x27;</span>:[forecast_price_delta[<span class="number">0</span>]], <span class="string">&#x27;actual_pct_delta&#x27;</span>:[np.nan]&#125;</span><br><span class="line">    <span class="keyword">return</span> pd.DataFrame(forecast_df)</span><br></pre></td></tr></table></figure>
+
 <p>我读取之前保存的模型，对未来一个工作日的价格变动进行预测。输出的结果<code>actual_pct_delta</code><br>是为未来价格发布后保存真实结果所预留的结构。</p>
-<pre><code>import pickle
-with open(&#39;best_model.pkl&#39;, &#39;rb&#39;) as file:
-    best_reg = pickle.load(file)
-forecast_df = forecast_one_period(price_info_adj_data, best_reg, data_processor)
-print(forecast_df)
-</code></pre>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;best_model.pkl&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> file:</span><br><span class="line">    best_reg = pickle.load(file)</span><br><span class="line">forecast_df = forecast_one_period(price_info_adj_data, best_reg, data_processor)</span><br><span class="line"><span class="built_in">print</span>(forecast_df)</span><br></pre></td></tr></table></figure>
+
+
 <p style="text-align: center;">
   <img src="/images/w1.jpg" style="width:100%; max-width:600px;">
 </p>
