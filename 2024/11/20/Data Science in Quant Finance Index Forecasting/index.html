@@ -124,21 +124,33 @@
 <pre><code>import yfinance as yf
 df_sp = yf.download(&#39;^GSPC&#39;, start=&quot;2012-11-01&quot;, end=&quot;2022-11-01&quot;)
 </code></pre>
-<img src="/images/figures/1.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/figures/1.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>Pandas 数据集 <code>df_sp</code> 包含了从 2012 年 11 月 1 日至 2022 年 10 月 31日十年以来的标普 500指数数据，记录了每个日期所对应的开市价格、最高价格、最低价格、闭市价格、闭市调整价格和交易量。</p>
 <h1 id="探索性数据分析"><a href="#探索性数据分析" class="headerlink" title="探索性数据分析"></a>探索性数据分析</h1><p>在收集完所需数据后，首先可以查看数据集中可能存在的空缺记录和需要调整的字段。我使用以下函数来了解数据集中包含多少条记录、是否有空缺值以及每个字段所对应的数据类型。</p>
 <pre><code>df_sp.info()
 </code></pre>
-<img src="/images/figures/2.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/2.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>可以看到，数据集中没有需要处理的空缺值，并且每个字段的类型都是统一的。除日期以外（Python Datetime类型格式），其他字段都是数字类型。价格相关的都是浮点数，交易量相关的为整数。接下来，我通过以下函数查看数据的统计类信息。</p>
 <pre><code>df_sp.describe()
 </code></pre>
-<img src="/images/figures/3.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/3.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>可以看到，指数数据都是正数，大部分以千为单位。唯一在单位上与其他列有所区别的是交易量数据。交易量的绝对数值与价格相比相差巨大。为了更有可比性，我需要调整交易量的绝对数值大小。在本步骤中，我选择先将交易量除以1000000，使其变成以百万为单位，那么在数值上，交易量数值大小缩小至千，与价格相似。</p>
-<img src="/images/figures/4.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/4.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>初步分析数据后，我可以将价格信息的时间序列可视化，更加直观地了解价格趋势。可使用相关性矩阵（correlation matrix）来研究变量之间的关系。</p>
 <p>交易量与价格之间没有非常高的相关性，但这并不能证明交易量不应该在价格预测中被考虑。从另一个角度来说，各价格变量之间的相关性非常高，我只需挑选其中一个（闭市调整价格）进行预测即可。在下一步中，我只保留需要用到的信息即可。在本项目中，我的目标是使用自 2020 年 2 月 15日起的历史数据，预测未来 1个工作日的调整后闭市指数价格。为了发挥提取数据的最大价值，我需要对现有的两个变量进行一些处理，从而尽可能完整地展现数据的特性。特别是对于时间序列数据而言，季节性和周期性都是非常重要的信息，而这些信息是可以从时间序列本身提取的。必要的数据处理虽然会增加计算量，但可以换来更精准更完善的模型结果。</p>
@@ -155,19 +167,28 @@ df_sp = yf.download(&#39;^GSPC&#39;, start=&quot;2012-11-01&quot;, end=&quot;202
 <pre><code>df_mod_forecast = df_mod.reset_index()
 df_mod_forecast.info()
 </code></pre>
-<img src="/images/figures/yy1.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/yy1.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>从日期信息中，提取年、月、日和工作日信息，经过处理后的数据如下：</p>
 <pre><code>df_mod_forecast.head()
 </code></pre>
-<img src="/images/figures/yy2.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/yy2.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <h2 id="更改价格数据"><a href="#更改价格数据" class="headerlink" title="更改价格数据"></a>更改价格数据</h2><p>本篇的预测目标是未来价格，对于指数而言，金融从业者相对看重的是价格变动而非其数值的大小。我可以选择预测价格，也可以选择预测价格变动。我将根据数据本身的特性来决定二者当中谁更适合建模。</p>
 <p>首先，我可以将每日和前一个工作日的价格差百分比计算出来。</p>
 <pre><code>df_mod_forecast[&#39;AdjPricePctDelta&#39;] = df_mod_forecast[&#39;Adj Close&#39;].pct_change()
 </code></pre>
 <h2 id="寻找周期和季节性-—-解构时间序列与自相关分析"><a href="#寻找周期和季节性-—-解构时间序列与自相关分析" class="headerlink" title="寻找周期和季节性 — 解构时间序列与自相关分析"></a>寻找周期和季节性 — 解构时间序列与自相关分析</h2><p>指数价格数据是以日期为单位的，且只有在工作日才有数据。我在尝试周期时可以有多种选择，例如以周、月或者季度为单位。这里时间序列分解效果最好的是月份。从2020 年 2 月到 2022 年 11 月大约有 20个月的时间。合适的周期会帮助我更好地寻找数据中的季节性。在之前的时间序列图像中注意到，全球疫情蔓延之后，股票市场表现出高于平常的波动。我需要使用multiplicative 模型来解决这个问题。我首先尝试分解价格的时间序列。</p>
-<img src="/images/figures/yy3.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/yy3.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>通过以上图像可以看出，每 100 天大约有 5 个周期，每个周期大约有 20天。除此之外，价格数据残差（residual）部分表现并不佳，徘徊在 1 左右。</p>
 <h2 id="根据周期调整交易量数据"><a href="#根据周期调整交易量数据" class="headerlink" title="根据周期调整交易量数据"></a>根据周期调整交易量数据</h2><p>时间序列较为传统的模型为 ARIMA模型，这类模型只需要一条时间序列，根据数据周期性等特征调试参数。时间序列也可以使用机器学习进行建模，这样的模型可以输入更多的变量，但需要对数据进行调整。和ARIMA 类型的模型不同，我需要使用 $t-1$ 的价格波动和 $t-2$的价格波动作为变量的一部分，输入模型进行训练。</p>
@@ -191,10 +212,13 @@ df_model[&#39;t_1_VolumeDelta&#39;] = df_model[&#39;t-1volume&#39;] - df_model[&
 <li>处理分类变量</li>
 </ol>
 <h2 id="处理缺失值并提取所需变量"><a href="#处理缺失值并提取所需变量" class="headerlink" title="处理缺失值并提取所需变量"></a>处理缺失值并提取所需变量</h2><p>首先，我需要剔除包含缺失值的行，并只保留需要的变量<code>x_input</code>，为下一步特征工程做准备。</p>
-<pre><code>x_input = (df_model.dropna()[[&#39;Year&#39;,&#39;Month&#39;,&#39;Day&#39;,&#39;Weekday&#39;,&#39;seasonality&#39;,&#39;sign_t_1&#39;,&#39;t_1_PricePctDelta&#39;,&#39;t_2_PricePctDelta&#39;,&#39;t_1_VolumeDelta&#39;]].reset_index(drop=True))
-x_input.head(10)
+<pre><code>x_input = (df_model.dropna()
 </code></pre>
-<img src="/images/figures/e1.jpg" style="width:100%;">
+<p>[[‘Year’,’Month’,’Day’,’Weekday’,’seasonality’,’sign_t_1’,’t_1_PricePctDelta’,’t_2_PricePctDelta’,’t_1_VolumeDelta’]].reset_index(drop&#x3D;True))<br>    x_input.head(10)</p>
+<p style="text-align: center;">
+  <img src="/images/e1.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>然后，再将目标预测列 <code>y</code> 从数据中提取出来。</p>
 <pre><code>y = df_model.dropna().reset_index(drop=True)[&#39;AdjPricePctDelta&#39;]
@@ -208,7 +232,10 @@ x[[&#39;t_1_PricePctDelta&#39;,&#39;t_2_PricePctDelta&#39;,&#39;t_1_VolumeDelta&
 <pre><code>x_mod = pd.get_dummies(data=x, columns=[&#39;Year&#39;,&#39;Month&#39;,&#39;Day&#39;,&#39;Weekday&#39;,&#39;seasonality&#39;])
 x_mod.columns
 </code></pre>
-<img src="/images/figures/e2.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/e2.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <h1 id="模型选择和训练"><a href="#模型选择和训练" class="headerlink" title="模型选择和训练"></a>模型选择和训练</h1><p>首先，我需要拆分训练集和测试集。对于不需要考虑记录顺序的数据，可以随机选取一部分数据作为训练集，剩下的部分作为测试集。而对于时间序列数据来说，记录之间的顺序是需要考虑的，比如我想要预测2 月份的价格变动，那么模型就不能接触 2月份以后的价格，以免数据泄露。由于股票指数数据为时间序列，我将时间序列前75% 的数据设为训练数据，后 25% 的数据设为测试数据。</p>
 <h2 id="模型选择"><a href="#模型选择" class="headerlink" title="模型选择"></a>模型选择</h2><p>在模型选择阶段，我会根据数据的特点，初步确定模型方向，并选择合适的模型评估指标。</p>
@@ -219,11 +246,17 @@ x_mod.columns
 <h1 id="模型评估"><a href="#模型评估" class="headerlink" title="模型评估"></a>模型评估</h1><p>通过运行以下方程，我可以根据预测差值（MAPE）的大小对各模型的表现进行排列。大家也可以探索更多种不同的模型，根据评估指标的高低择优选取模型做后续微调。</p>
 <pre><code>trail_result = ensemble_method_reg_trails(x_train, y_train, x_test, y_test)
 </code></pre>
-<img src="/images/figures/q1.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q1.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <pre><code>pd.DataFrame(trail_result).sort_values(&#39;model_test_mape&#39;, ascending=True)
 </code></pre>
-<img src="/images/figures/q2.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q2.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>由此可以看出，在众多模型类型中，AdaBoost 在训练和测试集上的效果最好，MAPE 值最小，所以我选择 AdaBoost 进行下一步的细节调优。与此同时，我发现 Random Forest 和 GradientBoosting 也有不错的预测表现。注意，AdaBoost 虽然在训练集上准确度高，但模型的表现不是很稳定。</p>
 <p>接下来的模型微调分为两个步骤：</p>
@@ -266,11 +299,17 @@ result = search.fit(x_train, y_train)
 <p>可以看到，500 种参数组合中表现最佳的是：</p>
 <pre><code>result.best_params_
 </code></pre>
-<img src="/images/figures/q3.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q3.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <pre><code>result.best_score_
 </code></pre>
-<img src="/images/figures/q4.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q4.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <h2 id="使用-GridSearchCV-寻找更精确的参数"><a href="#使用-GridSearchCV-寻找更精确的参数" class="headerlink" title="使用 GridSearchCV 寻找更精确的参数"></a>使用 GridSearchCV 寻找更精确的参数</h2><p>根据 <code>RandomizedSearchCV</code> 的结果，我再使用 <code>GridSearchCV</code>进行更深一步的微调：</p>
 <ul>
@@ -282,16 +321,28 @@ result = search.fit(x_train, y_train)
 <p>search_grid &#x3D; {<br>‘n_estimators’: range(1, 51),<br>‘learning_rate’: np.linspace(0.6, 0.8, num&#x3D;20)<br>}</p>
 </li>
 </ul>
-<img src="/images/figures/q5.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q5.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p><code>GridSearchCV</code> 的结果如下：</p>
-<img src="/images/figures/q6.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q6.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>根据 <code>GridSearchCV</code>的结果，我保留最佳模型，让其在整个训练集上训练，并在测试集上进行预测，对结果进行评估。</p>
-<img src="/images/figures/q7.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q7.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>可以看到，结合训练集的交叉验证结果，最佳模型在测试集中的表现与模型选择和训练阶段的结果相比，准确度略有提升。最佳模型平衡了训练集和测试集表现，可以更有效地防止过拟合的情况出现。该模型在全量数据的预测结果中 MAPE 值为：</p>
-<img src="/images/figures/q8.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/q8.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <h1 id="模型预测"><a href="#模型预测" class="headerlink" title="模型预测"></a>模型预测</h1><p>与传统的 ARIMA模型不同，现有模型的每次预测都需要将预测信息重新整合，输入进模型后才能得到新的预测结果。输入数据的重新整合可以用以下方程进行开发，方便适应各种应用场景的需求。</p>
 <pre><code>def forecast_one_period(price_info_adj_data, ml_model, data_processor):
@@ -330,7 +381,10 @@ with open(&#39;best_model.pkl&#39;, &#39;rb&#39;) as file:
 forecast_df = forecast_one_period(price_info_adj_data, best_reg, data_processor)
 print(forecast_df)
 </code></pre>
-<img src="/images/figures/w1.jpg" style="width:100%;">
+<p style="text-align: center;">
+  <img src="/images/w1.jpg" style="width:100%; max-width:600px;">
+</p>
+
 
 <p>根据预测结果，我认为 2022 年 11 月 1 日这天标普指数会有轻微的上升。</p>
 <h1 id="分析预测结果"><a href="#分析预测结果" class="headerlink" title="分析预测结果"></a>分析预测结果</h1><p>根据近两年的数据走向，我有了这样的预测结果：标普指数会有轻微的上升。但当我查看2022 年 11 月 1日发布的实际数据时发现，指数在当天是下降的。这意味着外界的某种信息，可能是经济指标抑或是政策风向的改变，导致市场情绪有所变化。搜索相关新闻后，我发现了以下信息：</p>
