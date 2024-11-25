@@ -1,5 +1,21 @@
-(() => {
+(() => { 
     var navEl = document.getElementById('theme-nav');
+
+    // 添加滚动隐藏/显示逻辑
+    let lastScrollTop = 0; // 记录最后的滚动位置
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (scrollTop > lastScrollTop) {
+            // 向下滚动，隐藏导航栏
+            navEl.classList.add('hidden');
+        } else {
+            // 向上滚动，显示导航栏
+            navEl.classList.remove('hidden');
+        }
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // 防止负值
+    });
+
     navEl.addEventListener('click', (e) => {
         if (window.innerWidth <= 600) {
             if (navEl.classList.contains('open')) {
@@ -14,7 +30,8 @@
                 navEl.classList.remove('open')
             }
         }
-    })
+    });
+
     window.addEventListener('resize', (e) => {
         if (navEl.classList.contains('open')) {
             navEl.style.height = 48 + document.querySelector('#theme-nav .nav-items').clientHeight + 'px'
@@ -25,7 +42,7 @@
                 navEl.classList.remove('open')
             }
         }
-    })
+    });
 
     // a simple solution for managing cookies
     const Cookies = new class {

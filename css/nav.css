@@ -7,7 +7,11 @@ nav {
     left: 0;
     right: 0;
     z-index: 1000;
-    transition: height 0.8s cubic-bezier(0.86, 0, 0.07, 1);
+    transition: top 0.3s ease; /* 修改为平滑滚动动画 */
+}
+
+nav.hidden {
+    top: -60px; /* 隐藏导航栏，具体高度根据导航栏实际高度调整 */
 }
 
 nav > .inner {
